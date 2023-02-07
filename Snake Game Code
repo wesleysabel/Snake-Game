@@ -28,7 +28,7 @@ def collision_tail():
 
 
 # Music
-sound_collision = pygame.mixer.Sound('assets/sounds/collision_sound.wav')
+# sound_collision = pygame.mixer.Sound('assets/sounds/collision_sound.wav')
 
 # Config the window
 height = 600
@@ -47,7 +47,9 @@ DOWN = 3
 snake = [(300, 300), (310, 300), (320, 300)]
 snake_body = pygame.Surface((10, 10))
 snake_body.fill(color=(255, 255, 255))
+snake_died = False
 my_direction = LEFT
+points = 0
 
 # Apple
 apple_pos = pos_apple_random()
@@ -63,24 +65,51 @@ switch_down = True
 switch_left = True
 switch_right = True
 
+# Text
+font = pygame.font.SysFont('Arial', 20, True)
+
 gaming = True
+game_pause = False
+
 while gaming:
 
-    # for i in range(1, len(snake) - 1):
-    #     if snake[0][0] == snake[i][0] and snake[0][1] == snake[i][1]:
-    #         gaming = False
-
     if collision_tail():
-        gaming = False
+        snake_died = True
+        points = 0
+        while snake_died:
+            window.fill((255, 0, 0))
+            snake = [(300, 300), (310, 300), (320, 300)]
+            my_direction = LEFT
+            message_game_over = "GAME OVER"
+            message_game_restart = 'Press enter to return to game'
+            formatted_text = font.render(message_game_over, True, (0, 0, 0))
+            formatted_text2 = font.render(message_game_restart, True, (0, 0, 0))
+            window.blit(formatted_text, (240, 200))
+            window.blit(formatted_text2, (160, 300))
+
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                if event.type == KEYDOWN:
+                    if event.key == K_RETURN:
+                        snake_died = False
+                        apple_pos = pos_apple_random()
+
+            pygame.display.update()
+
 
     fps.tick(30)
     window.fill((0, 0, 0))
 
     if collision_apple(pos_snake=snake[0], pos_apple=apple_pos):
         apple_pos = pos_apple_random()
-        sound_collision.play()
-        for add in range(50):
-            snake.append(apple_pos)
+        points += 1
+        # sound_collision.play()
+        snake.append(apple_pos)
+
+    message_points = f'Points: {points}'
+    formatted_text = font.render(message_points, True, (0, 0, 255))
+    window.blit(formatted_text, (260, 10) )
 
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -118,6 +147,25 @@ while gaming:
 
                 switch_up = True
                 switch_down = True
+            
+            if event.key == K_ESCAPE:
+                game_pause = True
+                
+                while game_pause:
+
+                    window.fill((255, 255, 255))
+                    message_pause = 'The game has been paused. click ESC to return'
+                    formatted_text = font.render(message_pause, True, (0, 0, 0))
+                    window.blit(formatted_text, (70, 300))
+
+                    for event in pygame.event.get():
+                        if event.type == QUIT:
+                            pygame.quit()
+                        if event.type == KEYDOWN:
+                            if event.key == K_ESCAPE:
+                                game_pause = False
+                            
+                    pygame.display.update()
 
 
     for i in range(len(snake) - 1, 0, -1):
